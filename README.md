@@ -1,0 +1,2 @@
+# More :Employee Management System with Shift Group Analysis
+ This project is a comprehensive Employee Management System that allows users to search for employees and analyze work groups based on shifts. The system aims to simplify employee management through a user-friendly interface built using HTML, CSS, and JavaScript, utilizing the Tailwind CSS framework for an attractive and flexible design.
