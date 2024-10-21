@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google Sheets API Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f4f4f9;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+    }
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+    }
+    table, th, td {
+      border: 1px solid #ddd;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f9;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Google Sheets API Test</h2>
+    
+    <p>Checking access to <strong>TPO AV Performance - ML (Main Sheet)</strong></p>
+
+    <div>
+      <p>API Key and Spreadsheet ID are pre-configured in the script.</p>
+    </div>
+
+    <button onclick="testGoogleSheet()">Test Google Sheet Access</button>
+
+    <table id="results-table">
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Name</th>
+          <th>Shift Time</th>
+          <th>Tasks Completed</th>
+          <th>Quality</th>
+        </tr>
+      </thead>
+      <tbody id="results-body">
+        <!-- Results will appear here -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // API Key and Spreadsheet ID are hardcoded here
+    const apiKey = 'AIzaSyDctNVWQhbsQMEDfJDXI30emaTd8mtviEY';  // استبدل بـ API Key الخاصة بك
+    const spreadsheetId = '18QXl65W2CwC-TBLDL4h1dxjiu6H-0tJAAbdCJWxL0Hk'; // Spreadsheet ID
+
+    function testGoogleSheet() {
+      // البحث في الورقة "Overall Quality"
+      const overallQualityRange = "'Overall Quality'!A:E"; // النطاق للورقة الأولى
+      const dashboardQualityRange = "'Dashboard Quality Data'!A:E"; // النطاق للورقة الثانية
+
+      // طلب البيانات من الورقة الأولى
+      const overallQualityUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${overallQualityRange}?key=${apiKey}`;
+      fetch(overallQualityUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          const rows = data.values;
+          const resultsBody = document.getElementById('results-body');
+          resultsBody.innerHTML = ''; // مسح النتائج السابقة
+
+          if (rows && rows.length > 0) {
+            rows.forEach(row => {
+              const [email, name, shiftTime, tasksCompleted, quality] = row;
+              const rowElement = document.createElement('tr');
+              rowElement.innerHTML = `
+                <td>${email || 'N/A'}</td>
+                <td>${name || 'N/A'}</td>
+                <td>${shiftTime || 'N/A'}</td>
+                <td>${tasksCompleted || 'N/A'}</td>
+                <td>${quality || 'N/A'}</td>
+              `;
+              resultsBody.appendChild(rowElement);
+            });
+          } else {
+            alert('No data found in Overall Quality sheet.');
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching data from Overall Quality:', error);
+          alert(`Error fetching data: ${error.message}. Please check your API Key, Sheet ID, and the range specified.`);
+        });
+
+      // طلب البيانات من الورقة الثانية
+      const dashboardQualityUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${dashboardQualityRange}?key=${apiKey}`;
+      fetch(dashboardQualityUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          const rows = data.values;
+          const resultsBody = document.getElementById('results-body');
+          
+          if (rows && rows.length > 0) {
+            rows.forEach(row => {
+              const [email, gulpLink, qaLink, qualityPercentage] = row; // تأكد من الأعمدة الصحيحة
+              const rowElement = document.createElement('tr');
+              rowElement.innerHTML += `
+                <td>${email || 'N/A'}</td>
+                <td><a href="${gulpLink}" target="_blank">Gulp Link</a></td>
+                <td><a href="${qaLink}" target="_blank">QA Link</a></td>
+                <td>${qualityPercentage || 'N/A'}%</td>
+              `;
+              resultsBody.appendChild(rowElement);
+            });
+          } else {
+            alert('No data found in Dashboard Quality Data sheet.');
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching data from Dashboard Quality Data:', error);
+          alert(`Error fetching data: ${error.message}. Please check your API Key, Sheet ID, and the range specified.`);
+        });
+    }
+  </script>
+
+</body>
+</html>
